@@ -158,7 +158,7 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
   //   attitude.Rotate_BtoI(<V3F>) to rotate a vector from body frame to inertial frame
   // - the yaw integral is already done in the IMU update. Be sure not to integrate it again here
 
-  Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
+    Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
 
