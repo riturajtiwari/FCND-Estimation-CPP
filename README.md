@@ -76,6 +76,9 @@ Project outline:
 
 
 ### Step 1: Sensor Noise ###
+#### My Notes ####
+Created a Python script to read the log files and print out the standard deviation. Plugged in the standard deviation.
+#### Original notes ####
 
 For the controls project, the simulator was working with a perfect set of sensors, meaning none of the sensors had any noise.  The first step to adding additional realism to the problem, and developing an estimator, is adding noise to the quad's sensors.  For the first step, you will collect some simulated noisy sensor data and estimate the standard deviation of the quad's sensor.
 
@@ -95,7 +98,9 @@ NOTE: Your answer should match the settings in `SimulatedSensors.txt`, where you
 
 
 ### Step 2: Attitude Estimation ###
-
+#### My Notes ####
+Reviewed the Overleaf notebook, section 7.1.2 for nonlinear complimentary filter. Reviewed the source code for `Quaternion` class and determined that `IntegrateBodyRate()` fuction has exactly what is needed. Used that function to integrate pitch and roll.
+#### Original notes ####
 Now let's look at the first step to our state estimation: including information from our IMU.  In this step, you will be improving the complementary filter-type attitude filter with a better rate gyro attitude integration scheme.
 
 1. Run scenario `07_AttitudeEstimation`.  For this simulation, the only sensor used is the IMU and noise levels are set to 0 (see `config/07_AttitudeEstimation.txt` for all the settings for this simulation).  There are two plots visible in this simulation.
