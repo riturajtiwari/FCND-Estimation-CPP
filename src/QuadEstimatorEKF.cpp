@@ -160,7 +160,7 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
   //   attitude.Rotate_BtoI(<V3F>) to rotate a vector from body frame to inertial frame
   // - the yaw integral is already done in the IMU update. Be sure not to integrate it again here
 
-    Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
+    //Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
   // Representing g(x, u, dt) as Ax + Bu, lets calculate the "A" term and "B" term
@@ -168,6 +168,7 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
     aTerm(0) = curState(0) + curState(3) * dt;
     aTerm(1) = curState(1) + curState(4) * dt;
     aTerm(2) = curState(2) + curState(5) * dt;
+    aTerm(3) = curState(3);
     aTerm(4) = curState(4);
     aTerm(5) = curState(5) - CONST_GRAVITY * dt;
     aTerm(6) = curState(6);
@@ -268,7 +269,7 @@ void QuadEstimatorEKF::Predict(float dt, V3F accel, V3F gyro)
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
     // Build the Jacobian
     // First the entries that require vector multiplication
-    VectorXf u(3); u << accel[0], accel[1], accel[2];
+    VectorXf accelV(3); accelV << accel[0], accel[1], accel[2];
     VectorXf term = RbgPrime * accelV;
     term *= dt;
     float gPrime_3_6 = term(0);
