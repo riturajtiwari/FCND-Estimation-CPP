@@ -163,8 +163,35 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
     Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
+  // Representing g(x, u, dt) as Ax + Bu, lets calculate the "A" term and "B" term
+    VectorXf aTerm = VectorXf(7);
+    aTerm(0) = curState(0) + curState(3) * dt;
+    aTerm(1) = curState(1) + curState(4) * dt;
+    aTerm(2) = curState(2) + curState(5) * dt;
+    aTerm(4) = curState(4);
+    aTerm(5) = curState(5) - CONST_GRAVITY * dt;
+    aTerm(6) = curState(6);
+    
+    
+    
+    // Rotation matrix elements for the "B" term
+    float phi = rollEst;
+    float theta = pitchEst;
+    float psi = ekfState(6);
+    V3F Rbg0 = V3F(cos(theta) * cos(psi), sin(phi) * sin(theta) * cos(psi) - cos(phi) * sin(psi), cos(phi) * sin(theta) * cos(psi) + sin(phi) * sin(psi));
+    V3F Rbg1 = V3F(cos(theta) * sin(psi), sin(phi) * sin(theta) * sin(psi) + cos(phi) * cos(psi), cos(phi) * sin(theta) * sin(psi) - sin(phi) * cos(psi));
+    V3F Rbg2 = V3F(-sin(theta), cos(theta) * sin(phi),cos(theta) * cos(phi));
+    
+    VectorXf bTerm = VectorXf(7);
+    bTerm(0) = 0.0f;
+    bTerm(1) = 0.0f;
+    bTerm(2) = 0.0f;
+    bTerm(3) = Rbg0.dot(accel);
+    bTerm(4) = Rbg1.dot(accel);
+    bTerm(5) = Rbg2.dot(accel);
+    bTerm(6) = 0.0f;
 
-
+    predictedState = aTerm + bTerm;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return predictedState;
@@ -190,7 +217,10 @@ MatrixXf QuadEstimatorEKF::GetRbgPrime(float roll, float pitch, float yaw)
   //   that your calculations are reasonable
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
+    float phi = roll; float theta = pitch; float psi = yaw;
+    RbgPrime(0,0) = - cos(theta)*sin(psi); RbgPrime(0,1) = -sin(phi)*sin(theta)*sin(psi) - cos(phi)*cos(psi); RbgPrime(0, 2) = -cos(phi)*sin(theta)*sin(psi) + sin(phi)*cos(psi);
+    RbgPrime(1,0) = cos(theta)* cos(psi); RbgPrime(1, 1) = sin(phi)*sin(theta)*cos(psi) - cos(phi)*sin(psi); RbgPrime(1, 2) = cos(phi)*sin(theta)*cos(psi) + sin(phi)*sin(psi);
+    RbgPrime(2, 0) = 0; RbgPrime(2, 1) = 0; RbgPrime(2, 2) = 0;
 
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
@@ -236,8 +266,25 @@ void QuadEstimatorEKF::Predict(float dt, V3F accel, V3F gyro)
   gPrime.setIdentity();
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-
+    // Build the Jacobian
+    // First the entries that require vector multiplication
+    VectorXf u(3); u << accel[0], accel[1], accel[2];
+    VectorXf term = RbgPrime * accelV;
+    term *= dt;
+    float gPrime_3_6 = term(0);
+    float gPrime_4_6 = term(1);
+    float gPrime_5_6 = term(2);
+    gPrime << 1, 0, 0, dt, 0, 0, 0,
+              0, 1, 0, 0, dt, 0, 0,
+              0, 0, 1, 0, 0, dt, 0,
+              0, 0, 0, 1, 0, 0, gPrime_3_6,
+              0, 0, 0, 0, 1, 0, gPrime_4_6,
+              0, 0, 0, 0, 0, 1, gPrime_5_6,
+              0, 0, 0, 0, 0, 0, 1;
+    MatrixXf a =  gPrime * ekfCov;
+    gPrime.transposeInPlace();
+    a *= gPrime;
+    ekfCov = a + Q;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   ekfState = newState;
