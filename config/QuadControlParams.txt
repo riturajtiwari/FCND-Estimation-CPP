@@ -19,20 +19,30 @@ minMotorThrust = .1
 maxMotorThrust = 4.5
 
 # Position control gains
-kpPosXY = 2
-kpPosZ = 2
-KiPosZ = 50
+# The following settings are for Scenario 4 - non idealities and all others
+# kpPosXY = 2.3
+# kpPosZ = 10
+# KiPosZ = 1
+# The following settings are for Scenario 5 - trajectory follow only
+kpPosXY = 2.3
+kpPosZ = 5.15
+KiPosZ = 10
 
 # Velocity control gains
-kpVelXY = 8
-kpVelZ = 8
+# The following settings are for Scenario 4 - non idealities
+kpVelXY = 13
+kpVelZ = 9
+# The following settings are for SCenario 5 - trajectory follow
+# kpVelXY = 50
+# kpVelZ = 50
+
 
 # Angle control gains
-kpBank = 12
-kpYaw = 3
+kpBank = 7.5
+kpYaw = 2
 
 # Angle rate gains
-kpPQR = 70, 70, 15
+kpPQR = 75, 75, 8
 
 # limits
 maxAscentRate = 5
