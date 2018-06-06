@@ -23,17 +23,14 @@ kpPosXY = 33
 kpPosZ = 50
 # Set KiPosZ to 18.05 for scenario 4 and 7.5 for scenario 5
 # This value passes scenario 4
-# KiPosZ = 18.05
+KiPosZ = 18.05
 # This value passes scenario 5, Scenario 11
-KiPosZ = 7.5
+# KiPosZ = 7.5
 
 # Velocity control gains
 # Originals that make P3 pass
 kpVelXY = 13
 kpVelZ = 9
-# De tuning
-# kpVelXY = 9
-# kpVelZ = 6
 
 # Angle control gains
 kpBank = 7.5
