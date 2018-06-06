@@ -329,6 +329,7 @@ void QuadEstimatorEKF::UpdateFromGPS(V3F pos, V3F vel)
               0, 0, 0, 1, 0, 0, 0,
               0, 0, 0, 0, 1, 0, 0,
               0, 0, 0, 0, 0, 1, 0;
+    zFromX.setZero();
     zFromX(0) = ekfState(0);
     zFromX(1) = ekfState(1);
     zFromX(2) = ekfState(2);

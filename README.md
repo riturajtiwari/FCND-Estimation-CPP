@@ -120,6 +120,9 @@ In the screenshot above the attitude estimation using linear scheme (left) and u
 
 
 ### Step 3: Prediction Step ###
+#### My Notes ####
+I first tried a brute force rotation matrix construction, representing  `g(x, u, dt)` as `Ax` + `Bu` and calculating the "A" term and "B" terms. However, this led to overly lengthy and potentially buggy code that had failures later in the GPS update code. So, I modified my code to use the `Quaternion` class' `Rotate_BtoI()` method to convert body frame accelerations to world frame and then use that to advance the velocity portion of the state.
+#### Original notes ####
 
 In this next step you will be implementing the prediction step of your filter.
 
@@ -163,6 +166,10 @@ Another set of bad examples is shown below for having a `QVelXYStd` too large (f
 
 
 ### Step 4: Magnetometer Update ###
+#### My Notes ####
+Tuned the `QYawStd` value as described. Follwed the overleaf notes to pick out the Jacobian, etc. Struggled a fair bit with
+normalization of yaw angles as it was not immediatly clear what the valid ranges of yaw readings were. Took a while to figure this out.
+#### Original notes ####
 
 Up until now we've only used the accelerometer and gyro for our state estimation.  In this step, you will be adding the information from the magnetometer to improve your filter's performance in estimating the vehicle's heading.
 
@@ -184,6 +191,9 @@ Up until now we've only used the accelerometer and gyro for our state estimation
 
 
 ### Step 5: Closed Loop + GPS Update ###
+#### My Notes ####
+This was fairly straighforward to code up. Iintially, when I changed the values in `config/11_GPSUpdate.txt`, my drone would fly off verticall. This led me to abandon the very brute force approach to `PredictState()`. I modified this method to use the `Quaternion` class' built-in rotation code and then the drone was much happier.
+#### Original notes ####
 
 1. Run scenario `11_GPSUpdate`.  At the moment this scenario is using both an ideal estimator and and ideal IMU.  Even with these ideal elements, watch the position and velocity errors (bottom right). As you see they are drifting away, since GPS update is not yet implemented.
 
