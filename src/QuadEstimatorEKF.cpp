@@ -160,39 +160,53 @@ VectorXf QuadEstimatorEKF::PredictState(VectorXf curState, float dt, V3F accel, 
   //   attitude.Rotate_BtoI(<V3F>) to rotate a vector from body frame to inertial frame
   // - the yaw integral is already done in the IMU update. Be sure not to integrate it again here
 
-    //Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
+    Quaternion<float> attitude = Quaternion<float>::FromEuler123_RPY(rollEst, pitchEst, curState(6));
 
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
   // Representing g(x, u, dt) as Ax + Bu, lets calculate the "A" term and "B" term
-    VectorXf aTerm = VectorXf(7);
-    aTerm(0) = curState(0) + curState(3) * dt;
-    aTerm(1) = curState(1) + curState(4) * dt;
-    aTerm(2) = curState(2) + curState(5) * dt;
-    aTerm(3) = curState(3);
-    aTerm(4) = curState(4);
-    aTerm(5) = curState(5) - CONST_GRAVITY * dt;
-    aTerm(6) = curState(6);
+//    VectorXf aTerm = VectorXf(7);
+//    aTerm(0) = curState(0) + curState(3) * dt;
+//    aTerm(1) = curState(1) + curState(4) * dt;
+//    aTerm(2) = curState(2) + curState(5) * dt;
+//    aTerm(3) = curState(3);
+//    aTerm(4) = curState(4);
+//    aTerm(5) = curState(5) - CONST_GRAVITY * dt;
+//    aTerm(6) = curState(6);
+//
+//
+//
+//    // Rotation matrix elements for the "B" term
+//    float phi = rollEst;
+//    float theta = pitchEst;
+//    float psi = ekfState(6);
+//    V3F Rbg0 = V3F(cos(theta) * cos(psi), sin(phi) * sin(theta) * cos(psi) - cos(phi) * sin(psi), cos(phi) * sin(theta) * cos(psi) + sin(phi) * sin(psi));
+//    V3F Rbg1 = V3F(cos(theta) * sin(psi), sin(phi) * sin(theta) * sin(psi) + cos(phi) * cos(psi), cos(phi) * sin(theta) * sin(psi) - sin(phi) * cos(psi));
+//    V3F Rbg2 = V3F(-sin(theta), cos(theta) * sin(phi),cos(theta) * cos(phi));
+//
+//    VectorXf bTerm = VectorXf(7);
+//    bTerm(0) = 0.0f;
+//    bTerm(1) = 0.0f;
+//    bTerm(2) = 0.0f;
+//    bTerm(3) = Rbg0.dot(accel);
+//    bTerm(4) = Rbg1.dot(accel);
+//    bTerm(5) = Rbg2.dot(accel);
+//    bTerm(6) = 0.0f;
+//
+//    predictedState = aTerm + bTerm;
+    // Too many bugs in the above abandoning for a simpler approach
+    // Advance position
+    float predX = predictedState[0] + predictedState[3] * dt;
+    float predY = predictedState[1] + predictedState[4] * dt;
+    float predZ = predictedState[2] + predictedState[5] * dt;
     
+    // Get the acceleration in world frame
+    V3F accelI = attitude.Rotate_BtoI(accel);
+    // Advance velocity
+    float velX = predictedState[3] + accelI.x * dt;
+    float velY = predictedState[4] + accelI.y * dt;
+    float velZ = predictedState[5]  - CONST_GRAVITY * dt + accelI.z * dt;
     
-    
-    // Rotation matrix elements for the "B" term
-    float phi = rollEst;
-    float theta = pitchEst;
-    float psi = ekfState(6);
-    V3F Rbg0 = V3F(cos(theta) * cos(psi), sin(phi) * sin(theta) * cos(psi) - cos(phi) * sin(psi), cos(phi) * sin(theta) * cos(psi) + sin(phi) * sin(psi));
-    V3F Rbg1 = V3F(cos(theta) * sin(psi), sin(phi) * sin(theta) * sin(psi) + cos(phi) * cos(psi), cos(phi) * sin(theta) * sin(psi) - sin(phi) * cos(psi));
-    V3F Rbg2 = V3F(-sin(theta), cos(theta) * sin(phi),cos(theta) * cos(phi));
-    
-    VectorXf bTerm = VectorXf(7);
-    bTerm(0) = 0.0f;
-    bTerm(1) = 0.0f;
-    bTerm(2) = 0.0f;
-    bTerm(3) = Rbg0.dot(accel);
-    bTerm(4) = Rbg1.dot(accel);
-    bTerm(5) = Rbg2.dot(accel);
-    bTerm(6) = 0.0f;
-
-    predictedState = aTerm + bTerm;
+    predictedState << predX, predY, predZ, velX, velY, velZ, predictedState(6);
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   return predictedState;
@@ -309,7 +323,18 @@ void QuadEstimatorEKF::UpdateFromGPS(V3F pos, V3F vel)
   //  - The GPS measurement covariance is available in member variable R_GPS
   //  - this is a very simple update
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
+    hPrime << 1, 0, 0, 0, 0, 0, 0,
+              0, 1, 0, 0, 0, 0, 0,
+              0, 0, 1, 0, 0, 0, 0,
+              0, 0, 0, 1, 0, 0, 0,
+              0, 0, 0, 0, 1, 0, 0,
+              0, 0, 0, 0, 0, 1, 0;
+    zFromX(0) = ekfState(0);
+    zFromX(1) = ekfState(1);
+    zFromX(2) = ekfState(2);
+    zFromX(3) = ekfState(3);
+    zFromX(4) = ekfState(4);
+    zFromX(5) = ekfState(5);
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   Update(z, hPrime, R_GPS, zFromX);
@@ -330,8 +355,10 @@ void QuadEstimatorEKF::UpdateFromMag(float magYaw)
   //    (you don't want to update your yaw the long way around the circle)
   //  - The magnetomer measurement covariance is available in member variable R_Mag
   ////////////////////////////// BEGIN STUDENT CODE ///////////////////////////
-
-
+    hPrime << 0, 0, 0, 0, 0, 0, 1;
+    zFromX(0) = ekfState(6);
+    if ( z(0)-ekfState(6) > F_PI) z(0) -= 2.f*F_PI;
+    if ( z(0)-ekfState(6) < -F_PI) z(0) += 2.f*F_PI;
   /////////////////////////////// END STUDENT CODE ////////////////////////////
 
   Update(z, hPrime, R_Mag, zFromX);
