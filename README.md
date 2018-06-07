@@ -218,7 +218,9 @@ This was fairly straighforward to code up. Iintially, when I changed the values 
 At this point, congratulations on having a working estimator!
 
 ### Step 6: Adding Your Controller ###
-
+#### My Notes ####
+I had to change the parameters in `QuadControlParams.txt` to get scenarios to pass. I struggled a fair bit with getting the same set of gains to work across P3 and P4. In the end, I went with a separate `QuadControlParams.txt` (file named `QuadControlParams_P3.txt`) for scenarios 1 through 5 and another one for 6 through 11.
+#### Original notes ####
 Up to this point, we have been working with a controller that has been relaxed to work with an estimated state instead of a real state.  So now, you will see how well your controller performs and de-tune your controller accordingly.
 
 1. Replace `QuadController.cpp` with the controller you wrote in the last project.
